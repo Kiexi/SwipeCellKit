@@ -265,8 +265,19 @@ class SwipeController: NSObject {
         animator.addAnimations({
             guard let swipeable = self.swipeable, let actionsContainerView = self.actionsContainerView else { return }
             
+            let finalOffset: CGFloat
+            if swipeable.state == .left || swipeable.state == .right {
+                let orientation: SwipeActionsOrientation = offset < 0 ? .left : .right
+                let options = self.delegate?.swipeController(self, editActionsOptionsForSwipeableFor: orientation) ?? SwipeOptions()
+                let margin = options.buttonsContainerMargin ?? 0
+                finalOffset = offset - margin * orientation.scale
+            } else {
+                finalOffset = offset
+            }
+            
             actionsContainerView.center = CGPoint(x: offset, y: actionsContainerView.center.y)
             swipeable.actionsView?.visibleWidth = abs(actionsContainerView.frame.minX)
+            actionsContainerView.center = CGPoint(x: finalOffset, y: actionsContainerView.center.y)
             swipeable.layoutIfNeeded()
         })
         
